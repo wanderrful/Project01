@@ -13,8 +13,9 @@ Saved
 *.xcodeproj
 *.xcworkspace
 
-Config/DefaultEditor.ini
+*.uasset
 
 .idea
-cmake-build*
+CMakeLists.txt
+cmake-build-*
 *.code-workspace
