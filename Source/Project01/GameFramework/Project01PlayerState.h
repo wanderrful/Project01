@@ -13,5 +13,4 @@ UCLASS()
 class PROJECT01_API AProject01PlayerState : public APlayerState
 {
 	GENERATED_BODY()
-	
 };

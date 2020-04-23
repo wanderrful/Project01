@@ -59,13 +59,13 @@ AProject01Character::AProject01Character()
 
 void AProject01Character::Tick(float DeltaSeconds)
 {
-    Super::Tick(DeltaSeconds);
+	Super::Tick(DeltaSeconds);
 
 	if (CursorToWorld != nullptr)
 	{
 		if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
 		{
-			if (UWorld* World = GetWorld())
+			if (UWorld *World = GetWorld())
 			{
 				FHitResult HitResult;
 				FCollisionQueryParams Params(NAME_None, FCollisionQueryParams::GetUnknownStatId());
@@ -77,7 +77,7 @@ void AProject01Character::Tick(float DeltaSeconds)
 				CursorToWorld->SetWorldLocationAndRotation(HitResult.Location, SurfaceRotation);
 			}
 		}
-		else if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		else if (APlayerController *PC = Cast<APlayerController>(GetController()))
 		{
 			FHitResult TraceHitResult;
 			PC->GetHitResultUnderCursor(ECC_Visibility, true, TraceHitResult);
