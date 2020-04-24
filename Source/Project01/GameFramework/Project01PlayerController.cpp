@@ -6,11 +6,19 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Project01Character.h"
 #include "Engine/World.h"
+#include "Engine/LocalPlayer.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
+#include "Project01/Subsystems/InteractionSubsystem.h"
+#include "Project01/Interfaces/Interactable.h"
 
 AProject01PlayerController::AProject01PlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
+}
+
+void AProject01PlayerController::BeginPlay()
+{
 }
 
 void AProject01PlayerController::PlayerTick(float DeltaTime)
@@ -22,6 +30,8 @@ void AProject01PlayerController::PlayerTick(float DeltaTime)
 	{
 		MoveToMouseCursor();
 	}
+
+	this->UpdateInteractionTarget();
 }
 
 void AProject01PlayerController::SetupInputComponent()
@@ -32,11 +42,31 @@ void AProject01PlayerController::SetupInputComponent()
 	InputComponent->BindAction("SetDestination", IE_Pressed, this, &AProject01PlayerController::OnSetDestinationPressed);
 	InputComponent->BindAction("SetDestination", IE_Released, this, &AProject01PlayerController::OnSetDestinationReleased);
 
-	// support touch devices 
+	// support touch devices
 	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AProject01PlayerController::MoveToTouchLocation);
 	InputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AProject01PlayerController::MoveToTouchLocation);
 
 	InputComponent->BindAction("ResetVR", IE_Pressed, this, &AProject01PlayerController::OnResetVR);
+
+	UInteractionSubsystem *interactionSubsystem = GetInteractionSubsystem();
+	if (interactionSubsystem)
+	{
+		InputComponent->BindAction(FName(TEXT("Interact")), IE_Pressed, interactionSubsystem, &UInteractionSubsystem::OnInteract);
+	}
+}
+
+UInteractionSubsystem *AProject01PlayerController::GetInteractionSubsystem()
+{
+	ULocalPlayer *p = Cast<ULocalPlayer>(GetNetOwningPlayer());
+	if (p)
+	{
+		UInteractionSubsystem *interactionSubsystem = p->GetSubsystem<UInteractionSubsystem>();
+		if (interactionSubsystem)
+		{
+			return interactionSubsystem;
+		}
+	}
+	return nullptr;
 }
 
 void AProject01PlayerController::OnResetVR()
@@ -48,7 +78,7 @@ void AProject01PlayerController::MoveToMouseCursor()
 {
 	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
 	{
-		if (AProject01Character* MyPawn = Cast<AProject01Character>(GetPawn()))
+		if (AProject01Character *MyPawn = Cast<AProject01Character>(GetPawn()))
 		{
 			if (MyPawn->GetCursorToWorld())
 			{
@@ -86,7 +116,7 @@ void AProject01PlayerController::MoveToTouchLocation(const ETouchIndex::Type Fin
 
 void AProject01PlayerController::SetNewMoveDestination(const FVector DestLocation)
 {
-	APawn* const MyPawn = GetPawn();
+	APawn *const MyPawn = GetPawn();
 	if (MyPawn)
 	{
 		float const Distance = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
@@ -109,4 +139,35 @@ void AProject01PlayerController::OnSetDestinationReleased()
 {
 	// clear flag to indicate we should stop updating the destination
 	bMoveToMouseCursor = false;
+}
+
+void AProject01PlayerController::UpdateInteractionTarget()
+{
+	APawn *p = this->GetPawn();
+	if (!p)
+		return;
+
+	FHitResult hit;
+	FCollisionQueryParams params;
+	FVector start = p->GetActorLocation();
+	FVector end = start + p->GetActorForwardVector() * UInteractionSubsystem::GetInteractionDistance();
+	end.Z = start.Z;
+	params.AddIgnoredActor(p);
+
+	if (GetWorld()->SweepSingleByChannel(
+			hit,
+			start,
+			end,
+			FQuat::Identity,
+			ECC_Camera,
+			FCollisionShape::MakeSphere(64.f),
+			params))
+	{
+		UInteractionSubsystem *interactionSubsystem = GetInteractionSubsystem();
+		if (interactionSubsystem)
+		{
+			AActor *a = hit.Actor.Get();
+			interactionSubsystem->SetTarget(a && a->Implements<UInteractable>() ? Cast<IInteractable>(a) : nullptr);
+		}
+	}
 }

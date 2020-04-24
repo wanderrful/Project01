@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "Project01PlayerController.generated.h"
 
+class UInteractionSubsystem;
+
 UCLASS()
 class AProject01PlayerController : public APlayerController
 {
@@ -19,6 +21,7 @@ protected:
 	uint32 bMoveToMouseCursor : 1;
 
 	// Begin PlayerController interface
+	virtual void BeginPlay() override;
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
 	// End PlayerController interface
@@ -31,13 +34,15 @@ protected:
 
 	/** Navigate player to the current touch location. */
 	void MoveToTouchLocation(const ETouchIndex::Type FingerIndex, const FVector Location);
-	
+
 	/** Navigate player to the given world location. */
 	void SetNewMoveDestination(const FVector DestLocation);
 
 	/** Input handlers for SetDestination action. */
 	void OnSetDestinationPressed();
 	void OnSetDestinationReleased();
+
+private:
+	UInteractionSubsystem *GetInteractionSubsystem();
+	void UpdateInteractionTarget();
 };
-
-
