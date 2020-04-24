@@ -16,18 +16,23 @@ class UInteractionSubsystem : public ULocalPlayerSubsystem
 public:
 	UInteractionSubsystem();
 
-	void OnInteract();
-	bool SetTarget(IInteractable *target);
-
-private:
-	void TryInteract();
+	AActor *GetTarget();
+	bool SetTarget(AActor *target);
+	void UpdateTarget();
 
 public:
-	FORCEINLINE static float GetInteractionDistance() { return 500.f; }
+	void OnInteract();
 
 private:
-	UWorld *World;
+	void _StartTimer();
+	void _OnInteract();
 
+public:
+	FORCEINLINE static float GetInteractionDistance() { return 200.f; }
+
+private:
 	/* The Actor we will attempt to interact with */
-	IInteractable *Target;
+	AActor *Target;
+
+	FTimerHandle InteractionUpdateTimer;
 };

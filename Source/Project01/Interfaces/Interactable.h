@@ -6,7 +6,12 @@
 #include "UObject/Interface.h"
 #include "Interactable.generated.h"
 
-// This class does not need to be modified.
+/**	Interactable Interface
+ * 
+ * When an ActorComponent or SceneComponent implements this interface, the InteractionSubsystem 
+ * will call the OnInteract() method so that each Component can provide its own implementation of
+ * being interacted with!
+ */
 UINTERFACE(MinimalAPI)
 class UInteractable : public UInterface
 {
@@ -20,7 +25,7 @@ class PROJECT01_API IInteractable
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void OnInteract();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void OnInteract();
 };

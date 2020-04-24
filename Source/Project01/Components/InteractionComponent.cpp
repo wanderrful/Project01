@@ -2,6 +2,7 @@
 
 #include "InteractionComponent.h"
 #include "Project01/Project01.h"
+#include "Engine/Engine.h"
 
 // Sets default values for this component's properties
 UInteractionComponent::UInteractionComponent()
@@ -27,4 +28,10 @@ void UInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UInteractionComponent::OnInteract_Implementation()
+{
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(0, 1.f, FColor::Emerald, TEXT("UInteractionComponent::OnInteract >> Hello!"));
 }

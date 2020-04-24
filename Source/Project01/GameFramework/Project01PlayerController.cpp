@@ -5,11 +5,14 @@
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Project01Character.h"
+#include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Engine/LocalPlayer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Project01/Subsystems/InteractionSubsystem.h"
 #include "Project01/Interfaces/Interactable.h"
+#include "Project01/Project01.h"
+#include "GameFramework/Actor.h"
 
 AProject01PlayerController::AProject01PlayerController()
 {
@@ -30,8 +33,6 @@ void AProject01PlayerController::PlayerTick(float DeltaTime)
 	{
 		MoveToMouseCursor();
 	}
-
-	this->UpdateInteractionTarget();
 }
 
 void AProject01PlayerController::SetupInputComponent()
@@ -48,25 +49,12 @@ void AProject01PlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("ResetVR", IE_Pressed, this, &AProject01PlayerController::OnResetVR);
 
+	/* Connect player input to the Interaction Subsystem */
 	UInteractionSubsystem *interactionSubsystem = GetInteractionSubsystem();
 	if (interactionSubsystem)
 	{
 		InputComponent->BindAction(FName(TEXT("Interact")), IE_Pressed, interactionSubsystem, &UInteractionSubsystem::OnInteract);
 	}
-}
-
-UInteractionSubsystem *AProject01PlayerController::GetInteractionSubsystem()
-{
-	ULocalPlayer *p = Cast<ULocalPlayer>(GetNetOwningPlayer());
-	if (p)
-	{
-		UInteractionSubsystem *interactionSubsystem = p->GetSubsystem<UInteractionSubsystem>();
-		if (interactionSubsystem)
-		{
-			return interactionSubsystem;
-		}
-	}
-	return nullptr;
 }
 
 void AProject01PlayerController::OnResetVR()
@@ -141,33 +129,15 @@ void AProject01PlayerController::OnSetDestinationReleased()
 	bMoveToMouseCursor = false;
 }
 
-void AProject01PlayerController::UpdateInteractionTarget()
+UInteractionSubsystem *AProject01PlayerController::GetInteractionSubsystem()
 {
-	APawn *p = this->GetPawn();
+	ULocalPlayer *p = Cast<ULocalPlayer>(this->Player);
 	if (!p)
-		return;
+		return nullptr;
 
-	FHitResult hit;
-	FCollisionQueryParams params;
-	FVector start = p->GetActorLocation();
-	FVector end = start + p->GetActorForwardVector() * UInteractionSubsystem::GetInteractionDistance();
-	end.Z = start.Z;
-	params.AddIgnoredActor(p);
+	UInteractionSubsystem *interactionSubsystem = p->GetSubsystem<UInteractionSubsystem>();
+	if (!interactionSubsystem)
+		return nullptr;
 
-	if (GetWorld()->SweepSingleByChannel(
-			hit,
-			start,
-			end,
-			FQuat::Identity,
-			ECC_Camera,
-			FCollisionShape::MakeSphere(64.f),
-			params))
-	{
-		UInteractionSubsystem *interactionSubsystem = GetInteractionSubsystem();
-		if (interactionSubsystem)
-		{
-			AActor *a = hit.Actor.Get();
-			interactionSubsystem->SetTarget(a && a->Implements<UInteractable>() ? Cast<IInteractable>(a) : nullptr);
-		}
-	}
+	return interactionSubsystem;
 }

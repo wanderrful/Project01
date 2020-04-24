@@ -44,5 +44,4 @@ protected:
 
 private:
 	UInteractionSubsystem *GetInteractionSubsystem();
-	void UpdateInteractionTarget();
 };
