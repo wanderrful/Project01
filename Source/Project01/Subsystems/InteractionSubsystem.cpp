@@ -41,22 +41,18 @@ void UInteractionSubsystem::_OnInteract()
 	ULocalPlayer *p = this->GetLocalPlayer();
 	UWorld *w = p ? p->GetWorld() : nullptr;
 
-	if (w)
+	if (!w || !this->Target)
+		return;
+
+	TArray<UActorComponent *> interactableComponents = Target->GetComponentsByInterface(UInteractable::StaticClass());
+
+	if (!interactableComponents.Num())
+		return;
+
+	for (auto &component : interactableComponents)
 	{
-		if (this->Target)
-		{
-			TArray<UActorComponent *> interactableComponents = Target->GetComponentsByInterface(UInteractable::StaticClass());
-
-			if (interactableComponents.Num() > 0)
-			{
-
-				for (auto &component : interactableComponents)
-				{
-					IInteractable *_component = Cast<IInteractable>(component);
-					_component->Execute_OnInteract(component);
-				}
-			}
-		}
+		IInteractable *_component = Cast<IInteractable>(component);
+		_component->Execute_OnInteract(component);
 	}
 }
 
