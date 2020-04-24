@@ -9,8 +9,8 @@
 #include "Engine/World.h"
 #include "Engine/LocalPlayer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "Project01/Subsystems/InteractionSubsystem.h"
-#include "Project01/Interfaces/Interactable.h"
+#include "Project01/Interaction/Subsystems/InteractionSubsystem.h"
+#include "Project01/Interaction/Interfaces/Interactable.h"
 #include "Project01/Project01.h"
 #include "GameFramework/Actor.h"
 

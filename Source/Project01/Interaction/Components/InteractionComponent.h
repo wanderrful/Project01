@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Project01/Interfaces/Interactable.h"
+#include "Project01/Interaction/Interfaces/Interactable.h"
 #include "InteractionComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
